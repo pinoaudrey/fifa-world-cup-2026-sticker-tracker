@@ -2,7 +2,6 @@ import {
   Anchor,
   Badge,
   Button,
-  FileButton,
   Group,
   Paper,
   PasswordInput,
@@ -30,8 +29,6 @@ import {
 } from '../components/BracketBoard'
 import { abbrFor } from '../flags'
 import { useStore } from '../store'
-import { downloadJson, readJsonFile } from '../util/download'
-import type { Brackets, Results } from '../types'
 
 // Casual client-side gate to prevent accidental edits on the public site.
 // NOTE: this is NOT real security. The password ships in the static bundle and
@@ -94,44 +91,9 @@ function Gate({ onUnlock }: { onUnlock: () => void }) {
 }
 
 function AdminPanel() {
-  const {
-    tournament,
-    brackets,
-    results,
-    setWinner,
-    clearWinner,
-    deleteBracket,
-    importBrackets,
-    importResults,
-    resetToPublished,
-  } = useStore()
+  const { tournament, brackets, results, setWinner, clearWinner, deleteBracket } =
+    useStore()
   const t = tournament!
-  const [msg, setMsg] = useState<string | null>(null)
-
-  async function onImportBrackets(file: File | null) {
-    if (!file) return
-    try {
-      const data = await readJsonFile<Brackets>(file)
-      if (!Array.isArray(data)) throw new Error('Expected an array of brackets.')
-      importBrackets(data)
-      setMsg(`Imported ${data.length} bracket(s).`)
-    } catch (e) {
-      setMsg(`Import failed: ${(e as Error).message}`)
-    }
-  }
-
-  async function onImportResults(file: File | null) {
-    if (!file) return
-    try {
-      const data = await readJsonFile<Results>(file)
-      if (!data || typeof data.winners !== 'object')
-        throw new Error('Expected { "winners": { ... } }.')
-      importResults(data)
-      setMsg(`Imported results (${Object.keys(data.winners).length} decided).`)
-    } catch (e) {
-      setMsg(`Import failed: ${(e as Error).message}`)
-    }
-  }
 
   const sortedBrackets = [...brackets].sort((a, b) =>
     a.username.localeCompare(b.username),
@@ -142,70 +104,12 @@ function AdminPanel() {
       <div>
         <Title order={1}>Admin</Title>
         <Text c="dimmed" size="sm">
-          Enter results, manage brackets, and import/export JSON. The admin is the
-          source of truth: re-enter each person’s screenshot picks, enter results as
-          matches finish, then export and commit the JSON.
+          Enter results and manage brackets.{' '}
+          {import.meta.env.DEV
+            ? 'On localhost every change auto-saves to public/data/*.json — just commit and push.'
+            : 'Re-enter each person’s picks and the results as matches finish.'}
         </Text>
       </div>
-
-      <Paper withBorder radius="md" p="md">
-        <Title order={3} mb="sm">
-          Import / Export
-        </Title>
-        <Group gap="sm">
-          <Button onClick={() => downloadJson('brackets.json', brackets)}>
-            Export brackets.json
-          </Button>
-          <Button onClick={() => downloadJson('results.json', results)}>
-            Export results.json
-          </Button>
-          <FileButton onChange={onImportBrackets} accept="application/json,.json">
-            {(props) => (
-              <Button variant="default" {...props}>
-                Import brackets.json
-              </Button>
-            )}
-          </FileButton>
-          <FileButton onChange={onImportResults} accept="application/json,.json">
-            {(props) => (
-              <Button variant="default" {...props}>
-                Import results.json
-              </Button>
-            )}
-          </FileButton>
-          <Button
-            variant="subtle"
-            color="red"
-            onClick={async () => {
-              if (
-                confirm('Discard all local edits and reload the committed JSON from the repo?')
-              ) {
-                await resetToPublished()
-                setMsg('Reset to published data.')
-              }
-            }}
-          >
-            Reset to published
-          </Button>
-        </Group>
-        {msg && (
-          <Text c="green" size="sm" mt="xs">
-            {msg}
-          </Text>
-        )}
-        {import.meta.env.DEV ? (
-          <Text c="green.8" size="xs" mt="xs" fw={600}>
-            Dev mode (localhost): your edits auto-save to{' '}
-            <code>public/data/brackets.json</code> and <code>results.json</code> —
-            no export needed, just commit &amp; push.
-          </Text>
-        ) : (
-          <Text c="dimmed" size="xs" mt="xs">
-            To publish: export both files, drop them into <code>public/data/</code>,
-            commit, and push.
-          </Text>
-        )}
-      </Paper>
 
       <div>
         <Title order={3}>Enter results</Title>
