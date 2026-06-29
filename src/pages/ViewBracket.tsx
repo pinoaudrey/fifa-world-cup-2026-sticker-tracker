@@ -379,7 +379,6 @@ function BracketCard({
         <TeamSlot team={realA} isWinner={winner !== undefined && winner === realA} />
         <TeamSlot team={realB} isWinner={winner !== undefined && winner === realB} />
         <div className="bcard-foot">
-          <span className="muted">Match {match.id}</span>
           <span className="muted">{shortTime(match.datetime)}</span>
         </div>
       </div>
