@@ -731,7 +731,7 @@ th {
   flex: none;
   background: #f5f7f9;
   border-left: 1px solid #e6e9ed;
-  padding: 0.5rem 0.4rem;
+  padding: 0.7rem 0.4rem 0.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -742,6 +742,13 @@ th {
   position: relative;
   width: 50px;
   height: 34px;
+  margin-bottom: 0.2rem;
+}
+/* The tile clips the flag to its rounded box; the badge lives outside it so
+   it can overhang the corner without being cut off. */
+.pick-flag-tile {
+  width: 100%;
+  height: 100%;
   border: 1px solid #d0d5db;
   border-radius: 4px;
   background: #fff;
@@ -749,7 +756,6 @@ th {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  margin-bottom: 0.2rem;
 }
 .pick-flag {
   font-size: 1.6rem;
@@ -759,6 +765,7 @@ th {
   position: absolute;
   top: -7px;
   right: -7px;
+  z-index: 2;
   width: 19px;
   height: 19px;
   border-radius: 50%;
@@ -768,6 +775,7 @@ th {
   justify-content: center;
   color: #fff;
   border: 2px solid #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 .pick-badge.is-correct {
   background: #2ea043;

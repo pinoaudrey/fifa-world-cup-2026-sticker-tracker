@@ -385,7 +385,9 @@ function BracketCard({
       </div>
       <div className="bcard-pick">
         <div className="pick-flag-wrap">
-          <span className="pick-flag">{pick ? flagFor(pick) : '—'}</span>
+          <span className="pick-flag-tile">
+            <span className="pick-flag">{pick ? flagFor(pick) : '—'}</span>
+          </span>
           <span className={`pick-badge ${statusClass(status)}`}>{badge}</span>
         </div>
         <div className="pick-my muted">My Pick:</div>
