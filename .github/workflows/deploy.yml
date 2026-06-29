@@ -2,10 +2,10 @@ name: Deploy to GitHub Pages
 
 # Builds the Vite app and publishes dist/ to GitHub Pages.
 # Set Settings → Pages → Source to "GitHub Actions" once, then every push
-# to one of these branches redeploys automatically.
+# to main redeploys automatically.
 on:
   push:
-    branches: [main, claude-bracket]
+    branches: [main]
   workflow_dispatch:
 
 permissions:

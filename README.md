@@ -151,7 +151,7 @@ Pages' static hosting.
 2. **Enable Pages.** In the GitHub repo: **Settings → Pages → Build and
    deployment → Source → GitHub Actions**.
 
-3. **Deploy.** Push to `main` (or `claude-bracket`). The workflow in
+3. **Deploy.** Push to `main`. The workflow in
    [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) installs
    deps, runs the tests, builds, and publishes `dist/`. The live URL is
    `https://<your-user>.github.io/<repo-name>/`.
