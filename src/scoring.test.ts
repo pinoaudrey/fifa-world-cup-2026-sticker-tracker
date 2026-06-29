@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import tournamentData from '../public/data/tournament.json'
 import {
+  bracketOrder,
   eliminatedTeams,
   isComplete,
   participants,
   pruneInvalid,
   setPick,
 } from './bracket'
+import { abbrFor } from './flags'
 import { leaderboard, MAX_SCORE, scoreBracket } from './scoring'
 import type { Bracket, Results, Tournament } from './types'
 
@@ -142,6 +144,41 @@ describe('eliminatedTeams', () => {
     expect(elim.has('Ivory Coast')).toBe(true) // lost 78
     expect(elim.has('Brazil')).toBe(false)
     expect(elim.has('Norway')).toBe(false)
+  })
+})
+
+describe('bracketOrder (tree layout ordering)', () => {
+  const order = bracketOrder(t)
+
+  it('orders R32 so feeder pairs are vertically adjacent', () => {
+    expect(order.R32.map((m) => m.id)).toEqual([
+      74, 77, 73, 75, 83, 84, 81, 82, 76, 78, 79, 80, 86, 88, 85, 87,
+    ])
+    expect(order.QF.map((m) => m.id)).toEqual([97, 98, 99, 100])
+    expect(order.F.map((m) => m.id)).toEqual([103])
+  })
+
+  it('keeps every match’s two feeders adjacent in the previous round', () => {
+    for (const round of ['R16', 'QF', 'SF', 'F'] as const) {
+      const prev = { R16: 'R32', QF: 'R16', SF: 'QF', F: 'SF' }[round] as
+        | 'R32'
+        | 'R16'
+        | 'QF'
+        | 'SF'
+      const prevIds = order[prev].map((m) => m.id)
+      for (const m of order[round]) {
+        const [a, b] = m.feeders!
+        expect(Math.abs(prevIds.indexOf(a) - prevIds.indexOf(b))).toBe(1)
+      }
+    }
+  })
+})
+
+describe('abbrFor', () => {
+  it('maps known teams to FIFA-style 3-letter codes', () => {
+    expect(abbrFor('Germany')).toBe('GER')
+    expect(abbrFor('South Africa')).toBe('RSA')
+    expect(abbrFor('Ivory Coast')).toBe('CIV')
   })
 })
 

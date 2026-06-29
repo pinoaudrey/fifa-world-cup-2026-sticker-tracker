@@ -22,6 +22,29 @@ export function matchesByRound(t: Tournament): Record<Round, Match[]> {
 }
 
 /**
+ * Matches grouped by round but ordered to draw as a tree: within each round the
+ * vertical order places each match's two feeders adjacent to one another, so a
+ * bracket rendered column-by-column has non-crossing connector lines. Computed
+ * by a depth-first post-order walk from the final (feeder[0] above feeder[1]).
+ */
+export function bracketOrder(t: Tournament): Record<Round, Match[]> {
+  const map = byId(t)
+  const out = { R32: [], R16: [], QF: [], SF: [], F: [] } as Record<Round, Match[]>
+  const ordered = orderedMatches(t)
+  const final = [...ordered].reverse().find((m) => m.round === 'F') ?? ordered[ordered.length - 1]
+  const visit = (m: Match | undefined) => {
+    if (!m) return
+    if (m.feeders) {
+      visit(map.get(m.feeders[0]))
+      visit(map.get(m.feeders[1]))
+    }
+    out[m.round].push(m)
+  }
+  visit(final)
+  return out
+}
+
+/**
  * The two teams that can contest `match`, given a source mapping of
  * matchId -> advancing team. The source is either a person's `picks`
  * (hypothetical bracket) or the real `results.winners`.
