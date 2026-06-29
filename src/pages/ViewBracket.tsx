@@ -154,19 +154,6 @@ export function ViewBracket() {
         </Text>
       </Group>
 
-      {/* Legend */}
-      <Group gap="xs">
-        <Badge color="green" variant="light" tt="none">
-          correct
-        </Badge>
-        <Badge color="red" variant="light" tt="none">
-          wrong / eliminated
-        </Badge>
-        <Badge color="gray" variant="light" tt="none">
-          locked / pending
-        </Badge>
-      </Group>
-
       <BracketBoard
         t={t}
         byRound={byRound}

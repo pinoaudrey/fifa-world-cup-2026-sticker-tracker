@@ -13,6 +13,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import { isComplete, pickCount } from '../bracket'
 import { useStore } from '../store'
 
+// Edit/Delete only matter for the admin working locally; on the published
+// (read-only) site, brackets are view-only.
+const canManage = import.meta.env.DEV
+
 export function BracketsList() {
   const { tournament, brackets, deleteBracket } = useStore()
   const navigate = useNavigate()
@@ -26,7 +30,7 @@ export function BracketsList() {
         <div>
           <Title order={1}>Brackets</Title>
           <Text c="dimmed" size="sm">
-            Everyone’s saved picks in this browser.
+            Everyone’s saved picks in this browser. Click a row to view a bracket.
           </Text>
         </div>
         <Button onClick={() => navigate('/create')}>+ New bracket</Button>
@@ -47,7 +51,7 @@ export function BracketsList() {
               <Table.Tr>
                 <Table.Th>Player</Table.Th>
                 <Table.Th>Picks</Table.Th>
-                <Table.Th>Actions</Table.Th>
+                {canManage && <Table.Th>Actions</Table.Th>}
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -55,7 +59,11 @@ export function BracketsList() {
                 const done = pickCount(b.picks, t)
                 const complete = isComplete(b.picks, t)
                 return (
-                  <Table.Tr key={b.username}>
+                  <Table.Tr
+                    key={b.username}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => navigate(`/view/${encodeURIComponent(b.username)}`)}
+                  >
                     <Table.Td>{b.username}</Table.Td>
                     <Table.Td>
                       <Group gap="xs">
@@ -67,27 +75,31 @@ export function BracketsList() {
                         </Badge>
                       </Group>
                     </Table.Td>
-                    <Table.Td>
-                      <Group gap="sm">
-                        <Anchor component={Link} to={`/view/${encodeURIComponent(b.username)}`}>
-                          View
-                        </Anchor>
-                        <Anchor component={Link} to={`/create/${encodeURIComponent(b.username)}`}>
-                          Edit
-                        </Anchor>
-                        <Anchor
-                          component="button"
-                          type="button"
-                          c="red"
-                          onClick={() => {
-                            if (confirm(`Delete ${b.username}'s bracket?`))
-                              deleteBracket(b.username)
-                          }}
-                        >
-                          Delete
-                        </Anchor>
-                      </Group>
-                    </Table.Td>
+                    {canManage && (
+                      <Table.Td>
+                        <Group gap="sm">
+                          <Anchor
+                            component={Link}
+                            to={`/create/${encodeURIComponent(b.username)}`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Edit
+                          </Anchor>
+                          <Anchor
+                            component="button"
+                            type="button"
+                            c="red"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              if (confirm(`Delete ${b.username}'s bracket?`))
+                                deleteBracket(b.username)
+                            }}
+                          >
+                            Delete
+                          </Anchor>
+                        </Group>
+                      </Table.Td>
+                    )}
                   </Table.Tr>
                 )
               })}
