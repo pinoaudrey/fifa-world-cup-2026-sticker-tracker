@@ -11,14 +11,12 @@ import { Navigate, NavLink as RouterNavLink, Route, Routes } from 'react-router-
 import { useStore } from './store'
 import { WC_RIBBON } from './theme'
 import { Admin } from './pages/Admin'
-import { BracketsList } from './pages/BracketsList'
 import { EditBracket } from './pages/EditBracket'
 import { Leaderboard } from './pages/Leaderboard'
 import { ViewBracket } from './pages/ViewBracket'
 
 const navLinks = [
   { to: '/', label: 'Leaderboard', end: true },
-  { to: '/brackets', label: 'Brackets' },
   { to: '/admin', label: 'Admin' },
 ]
 
@@ -98,7 +96,6 @@ export default function App() {
               <Route path="/" element={<Leaderboard />} />
               <Route path="/create" element={<EditBracket />} />
               <Route path="/create/:username" element={<EditBracket />} />
-              <Route path="/brackets" element={<BracketsList />} />
               <Route path="/view/:username" element={<ViewBracket />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<Navigate to="/" replace />} />

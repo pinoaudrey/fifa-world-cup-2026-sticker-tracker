@@ -78,8 +78,8 @@ export function ViewBracket() {
         <Title order={1}>Bracket not found</Title>
         <Text c="dimmed">
           No saved bracket for “{username}”.{' '}
-          <Anchor component={Link} to="/brackets">
-            See all brackets
+          <Anchor component={Link} to="/">
+            See the leaderboard
           </Anchor>{' '}
           or{' '}
           <Anchor component={Link} to="/create">

@@ -91,8 +91,8 @@ function AdminPanel() {
         <Title order={1}>Admin</Title>
         <Text c="dimmed" size="sm">
           Enter match results below. Create, edit, and delete brackets on the{' '}
-          <Anchor component={Link} to="/brackets">
-            Brackets
+          <Anchor component={Link} to="/">
+            Leaderboard
           </Anchor>{' '}
           page.
           {import.meta.env.DEV
