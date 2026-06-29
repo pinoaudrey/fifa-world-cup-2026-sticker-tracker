@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
@@ -35,6 +36,8 @@ interface StoreValue {
   getBracket: (username: string) => Bracket | undefined
   setWinner: (matchId: number, team: string) => void
   clearWinner: (matchId: number) => void
+  /** Lock/unlock pick visibility (hides picks from non-admins while locked). */
+  setLocked: (locked: boolean) => void
   importBrackets: (brackets: Brackets) => void
   importResults: (results: Results) => void
   /** Discard local edits and reload the committed (published) JSON. */
@@ -70,6 +73,24 @@ function writeLocal(key: string, value: unknown): void {
   }
 }
 
+// Dev only: persist a data file to disk via the Vite dev middleware so the
+// admin can edit on localhost and just `git push`. Debounced per file; a no-op
+// in the production build (import.meta.env.DEV is false there).
+const devSaveTimers: Record<string, ReturnType<typeof setTimeout>> = {}
+function devSaveFile(key: 'brackets' | 'results', data: unknown): void {
+  if (!import.meta.env.DEV) return
+  clearTimeout(devSaveTimers[key])
+  devSaveTimers[key] = setTimeout(() => {
+    void fetch(`/__save/${key}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(data, null, 2),
+    }).catch(() => {
+      /* dev convenience only — ignore failures */
+    })
+  }, 400)
+}
+
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [tournament, setTournament] = useState<Tournament | null>(null)
   const [brackets, setBrackets] = useState<Brackets>([])
@@ -100,12 +121,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // Mirror to localStorage on every change (but not during initial load).
+  // Mirror changes to localStorage and (in dev) to the JSON files on disk.
+  // The hydration refs skip the first run right after load so we don't rewrite
+  // the files with the data we just read from them.
+  const bracketsHydrated = useRef(false)
+  const resultsHydrated = useRef(false)
   useEffect(() => {
-    if (!loading) writeLocal(BRACKETS_KEY, brackets)
+    if (loading) return
+    writeLocal(BRACKETS_KEY, brackets)
+    if (bracketsHydrated.current) devSaveFile('brackets', brackets)
+    else bracketsHydrated.current = true
   }, [brackets, loading])
   useEffect(() => {
-    if (!loading) writeLocal(RESULTS_KEY, results)
+    if (loading) return
+    writeLocal(RESULTS_KEY, results)
+    if (resultsHydrated.current) devSaveFile('results', results)
+    else resultsHydrated.current = true
   }, [results, loading])
 
   const saveBracket = useCallback((bracket: Bracket) => {
@@ -144,6 +175,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         // advancing team feeding it changed). pruneInvalid drops any
         // downstream winner that's no longer a valid real participant.
         return {
+          ...prev,
           winners: pruneInvalid({ ...prev.winners, [matchId]: team }, tournament),
         }
       })
@@ -157,11 +189,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const next = { ...prev.winners }
         delete next[matchId]
         // Clearing a result orphans downstream matchups too.
-        return { winners: tournament ? pruneInvalid(next, tournament) : next }
+        return { ...prev, winners: tournament ? pruneInvalid(next, tournament) : next }
       })
     },
     [tournament],
   )
+
+  const setLocked = useCallback((locked: boolean) => {
+    setResults((prev) => ({ ...prev, locked }))
+  }, [])
 
   const importBrackets = useCallback(
     (incoming: Brackets) => {
@@ -205,6 +241,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       getBracket,
       setWinner,
       clearWinner,
+      setLocked,
       importBrackets,
       importResults,
       resetToPublished,
@@ -220,6 +257,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       getBracket,
       setWinner,
       clearWinner,
+      setLocked,
       importBrackets,
       importResults,
       resetToPublished,
