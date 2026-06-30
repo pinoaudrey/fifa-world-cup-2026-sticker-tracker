@@ -150,7 +150,7 @@ Pages' static hosting.
 1. **Set the base path.** In [`vite.config.ts`](vite.config.ts), `base` must
    match your repo name. It is currently:
    ```ts
-   base: '/fifa-world-cup-2026-sticker-tracker/'
+   base: '/world-cup-bracket/'
    ```
    Change it if you rename the repo (keep the leading and trailing slashes).
 

@@ -56,7 +56,7 @@ function devDataWriter(): Plugin {
 }
 
 export default defineConfig({
-  base: '/fifa-world-cup-2026-sticker-tracker/',
+  base: '/world-cup-bracket/',
   plugins: [react(), devDataWriter()],
   server: {
     port: 3000,
