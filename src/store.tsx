@@ -81,6 +81,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // One-time cleanup: older builds cached the working copy in localStorage, and
+  // a stale entry (e.g. an empty []) could shadow the published data. We no
+  // longer read or write these keys — drop any leftover so it can't linger in a
+  // visitor's browser.
+  useEffect(() => {
+    try {
+      localStorage.removeItem('wc2026.brackets')
+      localStorage.removeItem('wc2026.results')
+    } catch {
+      /* localStorage unavailable — nothing to clean up */
+    }
+  }, [])
+
   useEffect(() => {
     let cancelled = false
     ;(async () => {
